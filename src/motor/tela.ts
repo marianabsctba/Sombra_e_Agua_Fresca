@@ -34,10 +34,15 @@ export class Tela {
 
   ajustar(): void {
     const dpr = window.devicePixelRatio || 1;
-    const w = innerWidth * dpr;
+    // no celular deitado, os botões de toque ficam nas laterais, fora do jogo
+    const toque = document.body.classList.contains('toque');
+    const deitado = innerWidth > innerHeight;
+    const lateral = toque && deitado ? 2 * Math.min(150, innerWidth * 0.17) : 0;
+    const w = (innerWidth - lateral) * dpr;
     const h = innerHeight * dpr;
     let e = Math.min(w / LARG, h / ALT);
-    e = e >= 2 ? Math.floor(e) : Math.max(1, Math.floor(e * 2) / 2);
+    // escala inteira deixa os pixels iguais; em tela pequena vale mais aproveitar o espaço
+    e = e >= 4 ? Math.floor(e) : Math.max(0.5, Math.floor(e * 4) / 4);
     this.escala = e;
     this.canvas.width = Math.round(LARG * e);
     this.canvas.height = Math.round(ALT * e);

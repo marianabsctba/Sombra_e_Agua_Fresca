@@ -1,4 +1,5 @@
 import type { Comandos } from '../motor/entrada';
+import { dispositivo } from '../motor/dispositivo';
 import { efeitos } from '../motor/som';
 import { desenharPessoa, desenharSilhueta } from '../motor/sprites';
 import { ALT, LARG, Tela } from '../motor/tela';
@@ -163,7 +164,7 @@ export class Sombras implements Minijogo {
     }
     let fala = r.fala;
     if (this.fase === 'mostrando') fala = 'Preste atenção na sequência...';
-    if (this.fase === 'pergunta') fala = 'Qual é a próxima sombra? (1, 2, 3, setas ou clique)';
+    if (this.fase === 'pergunta') fala = dispositivo.toque ? 'Qual é a próxima sombra? (toque nela)' : 'Qual é a próxima sombra? (1, 2, 3, setas ou clique)';
     if (this.fase === 'acertou') fala = this.rodada === RODADAS.length - 1 ? 'NÃÃÃÃO! Como?!' : 'Hunf. Sorte de principiante.';
     if (this.fase === 'errou') fala = 'HAHAHAHA! Errou! De novo, que eu quero rir mais.';
     tl.texto('Trasímaco:', 12, 164, { tam: 6, cor: PERSONAGENS.trasimaco.cor });
@@ -280,9 +281,9 @@ export class Titereiro implements Minijogo {
     if (!this.comecou) {
       tl.moldura(40, 60, 240, 54, '#1b1020', '#ff9a52');
       tl.texto('Górgias grita o que a plateia quer.', 160, 66, { alinhar: 'center', tam: 7, cor: '#ffe8c2' });
-      tl.texto('Levante o boneco certo com 1, 2, 3 ou 4', 160, 78, { alinhar: 'center', tam: 7, cor: '#ffe8c2' });
-      tl.texto('(ou clique nele) antes do tempo acabar.', 160, 88, { alinhar: 'center', tam: 7, cor: '#ffe8c2' });
-      tl.texto('Enter para começar', 160, 101, { alinhar: 'center', tam: 6, cor: '#ffd36b' });
+      tl.texto(dispositivo.toque ? 'Toque no boneco certo' : 'Levante o boneco certo com 1, 2, 3 ou 4', 160, 78, { alinhar: 'center', tam: 7, cor: '#ffe8c2' });
+      tl.texto(dispositivo.toque ? 'antes do tempo acabar.' : '(ou clique nele) antes do tempo acabar.', 160, 88, { alinhar: 'center', tam: 7, cor: '#ffe8c2' });
+      tl.texto(dispositivo.toque ? 'Toque para começar' : 'Enter para começar', 160, 101, { alinhar: 'center', tam: 6, cor: '#ffd36b' });
       return;
     }
     this.rects().forEach((q, k) => tl.texto(String(k + 1), q.x + q.w / 2, q.y + 32, { alinhar: 'center', tam: 7, cor: '#ffe8c2' }));

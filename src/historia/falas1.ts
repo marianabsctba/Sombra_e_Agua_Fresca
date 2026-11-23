@@ -10,8 +10,18 @@ export const FALAS1: Record<string, Conversa> = {
         ['glauco', 'Meu nome é Glauco. Nasci acorrentado, igual a todo mundo aqui. A minha corrente é de dois metros: primeira classe.'],
         ['glauco', 'Na nossa frente tem uma parede. Na parede passam sombras. É a SombraTV, a única programação que existe.'],
         ['glauco', 'Hoje é final do Campeonato de Previsão de Sombras. Quem adivinha a próxima sombra ganha honra, glória e o direito de se achar.'],
-        ['', '(Setas ou WASD para se arrastar. Enter, Espaço ou E para conversar. Tab abre o Álbum de Filósofos. M liga e desliga o som.)'],
       ],
+      ir: 'ajuda',
+    },
+    ajuda: {
+      l: [],
+      ramos: [{ se: 'flag:toque', ir: 'toque' }, { ir: 'teclado' }],
+    },
+    teclado: {
+      l: [['', '(Setas ou WASD para se arrastar. Enter, Espaço ou E para conversar. Tab abre o Álbum de Filósofos. M liga e desliga o som.)']],
+    },
+    toque: {
+      l: [['', '(Use as setas na tela para se arrastar e Ok para conversar, ou toque na tela. O botão Álbum abre o Álbum de Filósofos.)']],
     },
   },
 

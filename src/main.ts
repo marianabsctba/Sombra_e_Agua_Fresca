@@ -7,7 +7,7 @@ import { desenhar } from './jogo/render';
 import { Robo } from './jogo/robo';
 import type { Estado } from './jogo/tipos';
 import { Entrada } from './motor/entrada';
-import { alternarSom } from './motor/som';
+import { alternarSom, destravarSom, pausarSom } from './motor/som';
 import { Tela } from './motor/tela';
 
 const CHAVE = 'sombra-e-agua-fresca:partida';
@@ -41,6 +41,10 @@ const armazem: Armazem = {
 const canvas = document.getElementById('tela') as HTMLCanvasElement;
 const tela = new Tela(canvas);
 const entrada = new Entrada(canvas, (x, y) => tela.doCliente(x, y));
+tela.ajustar(); // a entrada descobre se há toque, e isso muda o espaço da tela
+
+const gire = document.getElementById('gire');
+gire?.querySelector('button')?.addEventListener('click', () => gire.classList.add('dispensado'));
 const jogo = new Jogo(armazem);
 
 declare global {
@@ -52,6 +56,11 @@ declare global {
 window.jogo = jogo;
 window.robo = new Robo(jogo);
 
+// ?semPausa mantém o jogo rodando mesmo com a aba escondida (para testes automáticos)
+const agendar: (f: (t: number) => void) => void = new URLSearchParams(location.search).has('semPausa')
+  ? (f) => setTimeout(() => f(performance.now()), 16)
+  : (f) => requestAnimationFrame(f);
+
 let antes = performance.now();
 function quadro(agora: number): void {
   const dt = (agora - antes) / 1000;
@@ -61,8 +70,10 @@ function quadro(agora: number): void {
   jogo.atualizar(dt, entrada);
   entrada.limpar();
   desenhar(jogo, tela);
-  requestAnimationFrame(quadro);
+  agendar(quadro);
 }
 
+for (const ev of ['pointerdown', 'keydown'] as const) addEventListener(ev, destravarSom, { capture: true });
 addEventListener('beforeunload', () => jogo.salvar());
-document.fonts.load(`700 16px 'Pixelify Sans'`).finally(() => requestAnimationFrame(quadro));
+document.addEventListener('visibilitychange', () => pausarSom(document.hidden));
+document.fonts.load(`700 16px 'Pixelify Sans'`).finally(() => agendar(quadro));

@@ -6,7 +6,9 @@ import { desenharLadrilho, PALETAS, T } from '../motor/mapa';
 import { estaMudo } from '../motor/som';
 import { desenharPessoa, desenharSilhueta, type Aparencia, type Olhar } from '../motor/sprites';
 import { ALT, LARG, Tela } from '../motor/tela';
+import { dispositivo } from '../motor/dispositivo';
 import type { Jogo } from './jogo';
+import { objetivo } from './objetivo';
 import type { Npc } from './tipos';
 
 const SOMBRAS_PAREDE = ['coelho', 'cavalo', 'passaro', 'homem', 'vaso', 'arvore'];
@@ -299,13 +301,20 @@ function desenharObjeto(j: Jogo, tl: Tela, n: Npc, x: number, y: number): void {
 
 function desenharInterface(j: Jogo, tl: Tela): void {
   // topo
-  const alb = `Álbum ${j.e.cartas.length}/${ORDEM_ALBUM.length} (Tab)`;
+  const alb = `Álbum ${j.e.cartas.length}/${ORDEM_ALBUM.length}${dispositivo.toque ? '' : ' (Tab)'}`;
   tl.texto(alb, LARG - 4, 3, { alinhar: 'right', tam: 6, cor: '#ffe8c2' });
   if (j.cena.id === 'fora' || j.e.formas.length) {
     tl.texto(`Formas ${j.e.formas.length}/7`, LARG - 4, 11, { alinhar: 'right', tam: 6, cor: '#ffe08a' });
   }
   if (j.cena.id === 'volta') {
-    tl.texto(`Convencidos ${j.e.convencidos.length}  Irritação ${'●'.repeat(Math.min(6, j.e.irritacao))}${'○'.repeat(Math.max(0, 6 - j.e.irritacao))}`, 4, 3, { tam: 6, cor: '#ffd0a0' });
+    tl.texto(`Convencidos ${j.e.convencidos.length}  Irritação ${'●'.repeat(Math.min(6, j.e.irritacao))}${'○'.repeat(Math.max(0, 6 - j.e.irritacao))}`, 4, 14, { tam: 6, cor: '#ffd0a0' });
+  }
+  // objetivo atual, no canto, enquanto ninguém está falando
+  const obj = objetivo(j.e, j.cena.id);
+  if (obj && !j.dialogo && j.tituloCena <= 0) {
+    const w = tl.largura(obj, 6) + 10;
+    tl.moldura(2, 2, w, 10, '#1b1020', '#ffd36b', 0.8);
+    tl.texto(obj, 7, 4, { tam: 6, cor: '#ffe08a' });
   }
   if (estaMudo()) tl.texto('som desligado (M)', 4, ALT - 9, { tam: 5, cor: '#ffffff88' });
 
@@ -363,7 +372,12 @@ function desenharDialogo(j: Jogo, tl: Tela): void {
       tl.texto(parte, tx, y0 + i * 9, { tam: 7, cor: quem ? '#fff6e8' : '#d8c8e8' });
     });
     const pronto = j.revelado >= texto.length;
-    if (pronto && !esc.length && Math.floor(j.tempo * 3) % 2) tl.texto('▼', bx + bw - 10, by + bh - 10, { tam: 6, cor: '#ff9a52' });
+    if (pronto && !esc.length) {
+      const dica = dispositivo.toque ? 'toque ou Ok ▸' : 'Enter ou clique ▸';
+      tl.ctx.globalAlpha = 0.55 + Math.sin(j.tempo * 5) * 0.35;
+      tl.texto(dica, bx + bw - 6, by + bh - 9, { alinhar: 'right', tam: 5, cor: '#ff9a52' });
+      tl.ctx.globalAlpha = 1;
+    }
   }
   j.rectsEscolha = [];
   if (esc.length && (!l || j.revelado >= l[1].length)) {
@@ -469,8 +483,15 @@ function desenharTitulo(j: Jogo, tl: Tela): void {
     j.rectsMenu.push({ x: LARG / 2 - w / 2, y, w, h: 10 });
   });
   const vistos = ORDEM_FINAIS.filter((f) => j.permanente.finais.includes(f)).length;
+  const comoComecar = dispositivo.toque ? 'toque em Novo jogo para começar' : 'clique em Novo jogo ou aperte Enter';
+  const yc = 124 + ops.length * 11;
+  const wc = tl.largura(comoComecar, 6) + 12;
+  tl.moldura(LARG / 2 - wc / 2, yc, wc, 10, '#1b1020', '#1b1020', 0.85);
+  tl.ctx.globalAlpha = 0.6 + Math.sin(j.tempo * 4) * 0.4;
+  tl.texto(comoComecar, LARG / 2, yc + 2, { alinhar: 'center', tam: 6, cor: '#ffd36b' });
+  tl.ctx.globalAlpha = 1;
   tl.texto(`Finais vistos: ${vistos}/${ORDEM_FINAIS.length}`, 4, ALT - 8, { tam: 5, cor: '#ffe8c2aa' });
-  tl.texto('setas/WASD · Enter · Tab · M', LARG - 4, ALT - 8, { alinhar: 'right', tam: 5, cor: '#ffe8c2aa' });
+  if (!dispositivo.toque) tl.texto('setas/WASD · Enter · Tab · M', LARG - 4, ALT - 8, { alinhar: 'right', tam: 5, cor: '#ffe8c2aa' });
 }
 
 function desenharFinal(j: Jogo, tl: Tela): void {

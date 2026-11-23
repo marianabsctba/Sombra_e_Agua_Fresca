@@ -60,7 +60,7 @@ export const FALAS2: Record<string, Conversa> = {
     },
     turno: {
       l: [
-        ['gorgias', 'Ótimo! Eu grito o que a plateia quer, você levanta o boneco certo. Teclas 1, 2, 3 e 4, ou clique no boneco.'],
+        ['gorgias', 'Ótimo! Eu grito o que a plateia quer, você levanta o boneco certo. Aperte 1, 2, 3 ou 4, ou toque no boneco.'],
         ['gorgias', 'Se a plateia pedir uma coisa que não tem boneco... bota qualquer um. Eles não sabem a diferença.'],
       ],
       fx: ['mini:titereiro'],

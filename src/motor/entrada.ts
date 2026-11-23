@@ -1,3 +1,5 @@
+import { dispositivo } from './dispositivo';
+
 // Teclado, toque e clique viram ações com nome. O núcleo do jogo só conhece
 // a interface Comandos, assim o robô de teste consegue apertar botões sem DOM.
 
@@ -48,7 +50,13 @@ export class Entrada implements Comandos {
     });
 
     const toque = document.getElementById('toque');
-    if (toque && matchMedia('(pointer: coarse)').matches) toque.classList.add('ativo');
+    const temToque =
+      matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 || new URLSearchParams(location.search).has('toque');
+    if (toque && temToque) {
+      toque.classList.add('ativo');
+      document.body.classList.add('toque');
+      dispositivo.toque = true;
+    }
     toque?.querySelectorAll<HTMLButtonElement>('button[data-k]').forEach((b) => {
       const a = MAPA[b.dataset.k === 'Enter' ? 'Enter' : b.dataset.k!];
       const solta = () => this.seg.delete(a);

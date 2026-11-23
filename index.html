@@ -17,10 +17,24 @@
     #toque .acoes { grid-template-columns: repeat(2, 56px); align-content: end; }
     #toque button { font: 600 14px 'Pixelify Sans', monospace; color: #ffe8c2; background: #2a1830cc; border: 2px solid #ff9a52; border-radius: 6px; touch-action: none; -webkit-user-select: none; user-select: none; }
     #toque button:active { background: #ff9a52; color: #1b1020; }
+    /* celular deitado: controles nas laterais, centralizados na altura */
+    @media (orientation: landscape) {
+      #toque { inset: 0; align-items: center; padding: 0 max(10px, env(safe-area-inset-left)) 0 max(10px, env(safe-area-inset-right)); }
+      #toque .dpad { grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(3, 42px); }
+      #toque .acoes { grid-template-columns: 64px; grid-template-rows: repeat(2, 52px); }
+    }
+    /* celular em pé: o jogo fica em cima e os controles embaixo */
+    @media (orientation: portrait) {
+      body.toque { align-items: flex-start; padding-top: max(16px, env(safe-area-inset-top)); box-sizing: border-box; }
+    }
+    #gire { display: none; position: fixed; left: 12px; right: 12px; bottom: 210px; padding: 12px 14px; font: 500 15px/1.35 'Pixelify Sans', monospace; color: #ffe8c2; background: #2a1830; border: 2px solid #ff9a52; border-radius: 8px; text-align: center; }
+    #gire button { margin-top: 8px; font: 600 14px 'Pixelify Sans', monospace; color: #1b1020; background: #ff9a52; border: 0; border-radius: 6px; padding: 6px 12px; }
+    @media (orientation: portrait) { body.toque #gire:not(.dispensado) { display: block; } }
   </style>
 </head>
 <body>
   <canvas id="tela" aria-label="Sombra e Água Fresca"></canvas>
+  <div id="gire">Fica melhor com o celular deitado: o texto cresce e os botões vão para os lados.<br /><button type="button">Jogar em pé mesmo</button></div>
   <div id="toque" aria-hidden="true">
     <div class="grupo dpad">
       <span></span><button data-k="ArrowUp">▲</button><span></span>

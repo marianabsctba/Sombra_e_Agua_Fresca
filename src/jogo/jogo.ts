@@ -5,6 +5,7 @@ import { CONVERSAS, FORMAS } from '../historia/index';
 import { PERSONAGENS } from '../historia/personagens';
 import { criarMinijogo, type Minijogo } from '../minijogos/minijogos';
 import type { Comandos } from '../motor/entrada';
+import { dispositivo } from '../motor/dispositivo';
 import { SOLIDOS, T } from '../motor/mapa';
 import { efeitos, tocarAmbiente } from '../motor/som';
 import type { Olhar } from '../motor/sprites';
@@ -87,6 +88,7 @@ export class Jogo {
     this.e = estadoNovo();
     this.e.cartas = [...this.permanente.cartas];
     this.e.finaisVistos = [...this.permanente.finais];
+    if (dispositivo.toque) this.e.flags.toque = 1;
     this.modo = 'mundo';
     this.dialogo = null;
     this.mini = null;
@@ -307,7 +309,10 @@ export class Jogo {
     // só os três primeiros avisos aparecem e contam tempo; os outros esperam na fila
     this.avisos.slice(0, 3).forEach((a) => (a.t -= dt));
     this.avisos = this.avisos.filter((a) => a.t > 0);
-    if (this.modo === 'titulo') return this.atualizarTitulo(cmd);
+    if (this.modo === 'titulo') {
+      tocarAmbiente('titulo');
+      return this.atualizarTitulo(cmd);
+    }
     if (this.modo === 'final') {
       if (cmd.apertou('ok') || cmd.clique) {
         this.modo = 'titulo';
@@ -378,8 +383,10 @@ export class Jogo {
     const v = VELOCIDADE * dt;
     const nx = this.px + dx * v;
     if (!this.colide(nx, this.py)) this.px = nx;
+    else if (dx && !dy) this.escorregar('y', nx, v);
     const ny = this.py + dy * v;
     if (!this.colide(this.px, ny)) this.py = ny;
+    else if (dy && !dx) this.escorregar('x', ny, v);
 
     this.passoT -= dt;
     if (this.passoT <= 0) {
@@ -438,6 +445,26 @@ export class Jogo {
     }
     this.dentro = new Set(agora);
     if (!agora.some((i) => this.cena.gatilhos[i].bloqueio)) this.seguro = { x: this.px, y: this.py };
+  }
+
+  /**
+   * Quina de parede: se o passo bate por poucos pixels, desliza de lado até
+   * caber. No celular, sem diagonal precisa, isso evita ficar preso.
+   */
+  private escorregar(eixo: 'x' | 'y', alvo: number, v: number): void {
+    for (let s = 1; s <= 7; s++) {
+      for (const lado of [-1, 1]) {
+        const d = s * lado;
+        const livre = eixo === 'y'
+          ? !this.colide(alvo, this.py + d) && !this.colide(this.px, this.py + d)
+          : !this.colide(this.px + d, alvo) && !this.colide(this.px + d, this.py);
+        if (!livre) continue;
+        const m = Math.min(v, s) * lado;
+        if (eixo === 'y') this.py += m;
+        else this.px += m;
+        return;
+      }
+    }
   }
 
   private atualizarDialogo(dt: number, cmd: Comandos): void {

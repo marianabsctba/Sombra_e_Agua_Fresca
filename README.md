@@ -48,6 +48,16 @@ npm run build
 
 No navegador, o robô fica em `window.robo`, por exemplo: `jogo.novoJogo(); robo.ato1().ato2()`.
 
+Para uma partida inteira jogada só com toques e teclas de verdade (anda pelo mapa, conversa, joga os minijogos), abra `http://localhost:6533/?semPausa&toque` e rode no console:
+
+```js
+const j = await import('/ferramentas/jogador.js'); await j.jogarAteORei(); // ou jogarAteORei(3) para começar no ato 3
+```
+
+O `?semPausa` mantém o jogo rodando com a aba escondida e o `?toque` liga os botões de celular.
+
+A trilha também é gerada por código (`src/motor/musica.ts`): cada ato tem tema próprio, com tímpano, caixa, baixo, arpejo, cordas e metais.
+
 Publicação automática no GitHub Pages a cada push na `main`.
 
 ## Licença
