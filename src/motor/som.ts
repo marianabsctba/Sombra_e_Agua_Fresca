@@ -1,10 +1,12 @@
-// Som feito na hora com WebAudio: bipes de fala, ruídos de efeito e um zumbido
-// ambiente por cena. Nada de arquivo de áudio.
+import { Musica } from './musica';
+
+// Som feito na hora com WebAudio: bipes de fala, ruídos de efeito e
+// a trilha de cada ato. Nada de arquivo de áudio.
 
 let ac: AudioContext | null = null;
 let mestre: GainNode | null = null;
 let mudo = false;
-let ambiente: { para(): void } | null = null;
+let musica: Musica | null = null;
 let ambienteAtual = '';
 
 function contexto(): AudioContext | null {
@@ -59,41 +61,25 @@ export const efeitos = {
   final: () => arpejo([262, 330, 392, 523, 659, 784], 0.14, 'sine'),
 };
 
-/** Zumbido ambiente: dois osciladores graves com leve batimento. */
+/** Trilha do momento: cada ato tem um tema (veja musica.ts). */
 export function tocarAmbiente(tipo: string): void {
   if (tipo === ambienteAtual) return;
-  ambiente?.para();
-  ambiente = null;
   ambienteAtual = tipo;
   const c = contexto();
-  if (!c || !mestre || !tipo) return;
-  const base: Record<string, [number, number, OscillatorType, number]> = {
-    caverna: [55, 55.7, 'sine', 0.05],
-    fogo: [73, 74.2, 'triangle', 0.035],
-    subida: [98, 98.9, 'sine', 0.035],
-    fora: [196, 294, 'sine', 0.018],
-    volta: [49, 49.4, 'sine', 0.06],
-    final: [131, 196, 'sine', 0.025],
-  };
-  const d = base[tipo];
-  if (!d) return;
-  const g = c.createGain();
-  g.gain.value = 0;
-  g.gain.linearRampToValueAtTime(d[3], c.currentTime + 2);
-  g.connect(mestre);
-  const os = [d[0], d[1]].map((f) => {
-    const o = c.createOscillator();
-    o.type = d[2];
-    o.frequency.value = f;
-    o.connect(g);
-    o.start();
-    return o;
-  });
-  ambiente = {
-    para() {
-      const t = c.currentTime;
-      g.gain.linearRampToValueAtTime(0, t + 0.6);
-      os.forEach((o) => o.stop(t + 0.7));
-    },
-  };
+  if (!c || !mestre) return;
+  if (!musica) musica = new Musica(c, mestre);
+  if (tipo) musica.tocar(tipo);
+  else musica.parar();
+}
+
+/** Aba escondida ou tela do celular bloqueada: o som para junto com o jogo. */
+export function pausarSom(pausa: boolean): void {
+  if (!ac) return;
+  if (pausa) void ac.suspend();
+  else void ac.resume();
+}
+
+/** Navegadores só liberam áudio depois de um toque ou tecla. */
+export function destravarSom(): void {
+  contexto();
 }
